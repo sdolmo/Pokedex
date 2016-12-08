@@ -27632,33 +27632,127 @@ var React = require('react');
 var Reflux = require('reflux');
 var Actions = require('../reflux/Actions.jsx');
 var PokemonStore = require('../reflux/PokemonStore.jsx');
+var PokemonDataStore = require('../reflux/PokemonDataStore.jsx');
 
 var DetailsPage = React.createClass({
   displayName: 'DetailsPage',
 
-  mixins: [Reflux.listenTo(PokemonStore, 'onChange')],
+  mixins: [Reflux.listenTo(PokemonDataStore, 'onChange2'), Reflux.listenTo(PokemonStore, 'onChange')],
   getInitialState: function () {
-    return { pokemon: {}, pid: "" };
+    return { pid: "", description: "", name: "", image: "", height: "", weight: "", category: "", abilities: [], type: [] };
   },
   componentWillMount: function () {
     this.setState({ pid: this.props.params.pokemonId });
     var id = this.props.params.pokemonId;
-    // console.log(id);
     var link = "/pokemon-species/" + id;
-    Actions.getPokemon(link);
+    Actions.getPokemon1(link);
+    var link2 = "/pokemon/" + id;
+    Actions.getPokemon2(link2);
   },
   onChange: function (event, pokemon) {
-    this.setState({ pokemon: pokemon });
+    // console.log(pokemon);
+    this.setState({ description: pokemon.flavor_text_entries[1].flavor_text });
+    this.setState({ name: pokemon.names[0].name });
+    var img = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + this.state.pid + ".png";
+    this.setState({ image: img });
+    this.setState({ category: pokemon.genera[0].genus });
+  },
+  onChange2: function (event, pokemon) {
+    // console.log(pokemon);
+    this.setState({ height: pokemon.height });
+    this.setState({ weight: pokemon.weight });
+    var types = [];
+    for (var i = 0; i < pokemon.types.length; i++) {
+      types.push(pokemon.types[i].type.name);
+    };
+    this.setState({ type: types });
+    var ability = [];
+    for (var i = 0; i < pokemon.abilities.length; i++) {
+      ability.push(pokemon.abilities[i].ability.name);
+    };
+    this.setState({ abilities: ability });
   },
   render: function () {
     // console.log(this.state.pid);
-    return React.createElement('div', null);
+    var PokemonInfo = {
+      id: this.state.pid,
+      name: this.state.name,
+      image: this.state.image,
+      description: this.state.description,
+      height: this.state.height,
+      weight: this.state.weight,
+      category: this.state.category,
+      abilities: this.state.abilities,
+      types: this.state.type
+    };
+    var listAbilities = PokemonInfo.abilities.map(function (ability) {
+      return React.createElement(
+        'li',
+        null,
+        ability
+      );
+    });
+    var listTypes = PokemonInfo.types.map(function (type) {
+      return React.createElement(
+        'li',
+        null,
+        type
+      );
+    });
+    return React.createElement(
+      'div',
+      null,
+      React.createElement(
+        'ul',
+        null,
+        React.createElement(
+          'li',
+          null,
+          PokemonInfo.name
+        ),
+        React.createElement(
+          'li',
+          null,
+          React.createElement('img', { src: PokemonInfo.image })
+        ),
+        React.createElement(
+          'li',
+          null,
+          PokemonInfo.description
+        ),
+        React.createElement(
+          'li',
+          null,
+          PokemonInfo.height
+        ),
+        React.createElement(
+          'li',
+          null,
+          PokemonInfo.weight
+        ),
+        React.createElement(
+          'li',
+          null,
+          PokemonInfo.category
+        ),
+        React.createElement(
+          'li',
+          null,
+          listAbilities
+        ),
+        React.createElement(
+          'li',
+          null,
+          listTypes
+        )
+      )
+    );
   }
 });
 
 module.exports = DetailsPage;
 
-},{"../reflux/Actions.jsx":261,"../reflux/PokemonStore.jsx":262,"react":231,"reflux":249}],258:[function(require,module,exports){
+},{"../reflux/Actions.jsx":261,"../reflux/PokemonDataStore.jsx":262,"../reflux/PokemonStore.jsx":263,"react":231,"reflux":249}],258:[function(require,module,exports){
 var React = require('react');
 var Pokemon = require('./Pokemon.jsx');
 var Reflux = require('reflux');
@@ -27698,7 +27792,7 @@ var MainPage = React.createClass({
 
 module.exports = MainPage;
 
-},{"../reflux/Actions.jsx":261,"../reflux/PokemonStore.jsx":262,"./Pokemon.jsx":259,"react":231,"reflux":249}],259:[function(require,module,exports){
+},{"../reflux/Actions.jsx":261,"../reflux/PokemonStore.jsx":263,"./Pokemon.jsx":259,"react":231,"reflux":249}],259:[function(require,module,exports){
 var React = require('react');
 var ReactRouter = require('react-router');
 var Link = ReactRouter.Link;
@@ -27731,7 +27825,7 @@ ReactDOM.render(Routes, document.getElementById('main'));
 },{"./Routes.jsx":255,"react":231,"react-dom":47}],261:[function(require,module,exports){
 var Reflux = require('reflux');
 
-var Actions = Reflux.createActions(['getPokemons', 'getPokemon']);
+var Actions = Reflux.createActions(['getPokemons', 'getPokemon1', 'getPokemon2']);
 
 module.exports = Actions;
 
@@ -27740,19 +27834,37 @@ var HTTP = require('../services/HttpService.js');
 var Reflux = require('reflux');
 var Actions = require('./Actions.jsx');
 
+var PokemonDataStore = Reflux.createStore({
+  listenables: [Actions],
+  getPokemon2: function (link) {
+    HTTP.get(link).then(function (json) {
+      // console.log(json);
+      this.pokemon = json;
+      this.trigger('change', this.pokemon);
+    }.bind(this));
+  }
+});
+
+module.exports = PokemonDataStore;
+
+},{"../services/HttpService.js":264,"./Actions.jsx":261,"reflux":249}],263:[function(require,module,exports){
+var HTTP = require('../services/HttpService.js');
+var Reflux = require('reflux');
+var Actions = require('./Actions.jsx');
+
 var PokemonStore = Reflux.createStore({
   listenables: [Actions],
   getPokemons: function () {
     HTTP.get('/pokemon-species').then(function (json) {
-      console.log(json);
+      // console.log(json);
       var pokes = json.results;
       this.pokemons = pokes;
       this.trigger('change', this.pokemons);
     }.bind(this));
   },
-  getPokemon: function (link) {
+  getPokemon1: function (link) {
     HTTP.get(link).then(function (json) {
-      console.log(json);
+      // console.log(json);
       this.pokemon = json;
       this.trigger('change', this.pokemon);
     }.bind(this));
@@ -27761,7 +27873,7 @@ var PokemonStore = Reflux.createStore({
 
 module.exports = PokemonStore;
 
-},{"../services/HttpService.js":263,"./Actions.jsx":261,"reflux":249}],263:[function(require,module,exports){
+},{"../services/HttpService.js":264,"./Actions.jsx":261,"reflux":249}],264:[function(require,module,exports){
 var Fetch = require('whatwg-fetch');
 var baseUrl = "http://pokeapi.co/api/v2";
 

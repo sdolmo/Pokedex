@@ -18,7 +18,7 @@
   "devDependencies": {},
   "scripts": {
     "start": "watchify src/main.jsx -v -t [babelify --presets [ react ] ] -o public/js/main.js",
-    "browsersync": "browser-sync start --server --files 'css/*.css, js/*.js, *.html'" 
+    "browsersync": "browser-sync start --server --files 'public/css/*.css, public/js/*.js, public/*.html' --port 4000"
   },
   "repository": {
     "type": "git",
