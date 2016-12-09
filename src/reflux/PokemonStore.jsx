@@ -4,11 +4,11 @@ var Actions = require('./Actions.jsx');
 
 var PokemonStore = Reflux.createStore({
   listenables: [Actions],
-  getPokemons: function() {
-    HTTP.get('/pokemon-species')
+  getPokemons: function(link) {
+    HTTP.get(link)
     .then(function(json) {
-      // console.log(json);
-      var pokes = json.results
+      console.log(json);
+      var pokes = json
       this.pokemons = pokes;
       this.trigger('change', this.pokemons);
     }.bind(this));

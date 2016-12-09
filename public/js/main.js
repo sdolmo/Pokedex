@@ -27685,7 +27685,7 @@ var DetailsPage = React.createClass({
       abilities: this.state.abilities,
       types: this.state.type
     };
-    var listAbilities = PokemonInfo.abilities.map(function (ability) {
+    var listAbilities = PokemonInfo.abilities.map(function (ability, index) {
       return React.createElement(
         'li',
         null,
@@ -27718,27 +27718,41 @@ var DetailsPage = React.createClass({
         React.createElement(
           'li',
           null,
+          'Description: ',
           PokemonInfo.description
         ),
         React.createElement(
           'li',
           null,
+          'Height: ',
           PokemonInfo.height
         ),
         React.createElement(
           'li',
           null,
+          'Weight: ',
           PokemonInfo.weight
         ),
         React.createElement(
           'li',
           null,
+          'Category: ',
           PokemonInfo.category
         ),
         React.createElement(
           'li',
           null,
+          'Abilities:'
+        ),
+        React.createElement(
+          'li',
+          null,
           listAbilities
+        ),
+        React.createElement(
+          'li',
+          null,
+          'Type:'
         ),
         React.createElement(
           'li',
@@ -27765,26 +27779,50 @@ var MainPage = React.createClass({
 
   mixins: [Reflux.listenTo(PokemonStore, 'onChange')],
   getInitialState: function () {
-    return { pokemons: [] };
+    return { pokemons: [], types: [], next: "" };
   },
   componentWillMount: function () {
-    Actions.getPokemons();
+    Actions.getPokemons('/pokemon-species');
   },
   onChange: function (event, pokemons) {
-    this.setState({ pokemons: pokemons });
+    this.setState({ pokemons: pokemons.results });
+    var next = "/pokemon-species/?offset=" + 20;
+    this.setState({ next: next });
   },
+  handleLoad: function () {},
   render: function () {
+    var id = 0;
     var listPokemons = this.state.pokemons.map(function (pokemon, index) {
       id = index + 1;
-      return React.createElement(Pokemon, { key: pokemon.url, link: "/pokemon/" + id, pokemon: pokemon.name });
+      var img = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png";
+      return React.createElement(Pokemon, { key: pokemon.url, link: "/pokemon/" + id, pid: id, pokemon: pokemon.name, image: img });
     });
+
+    var styles = {
+      marginTop: 20,
+      textAlign: "center"
+    };
+
     return React.createElement(
       'div',
       null,
       React.createElement(
-        'ul',
+        'div',
+        { style: styles },
+        React.createElement(
+          'ul',
+          null,
+          listPokemons
+        )
+      ),
+      React.createElement(
+        'div',
         null,
-        listPokemons
+        React.createElement(
+          'button',
+          { onClick: this.handleLoad },
+          'Load More'
+        )
       )
     );
   }
@@ -27800,14 +27838,34 @@ var Link = ReactRouter.Link;
 var Pokemon = React.createClass({
   displayName: 'Pokemon',
 
+
   render: function () {
+    styles = {
+      listStyle: "none"
+    };
+
     return React.createElement(
-      'li',
-      null,
+      'div',
+      { className: 'col-sm-4', style: styles },
       React.createElement(
         Link,
         { to: this.props.link },
-        this.props.pokemon
+        React.createElement(
+          'li',
+          null,
+          React.createElement('img', { src: this.props.image })
+        ),
+        React.createElement(
+          'li',
+          null,
+          this.props.pid
+        ),
+        React.createElement(
+          'li',
+          null,
+          this.props.pokemon
+        ),
+        React.createElement('br', null)
       )
     );
   }
@@ -27854,10 +27912,10 @@ var Actions = require('./Actions.jsx');
 
 var PokemonStore = Reflux.createStore({
   listenables: [Actions],
-  getPokemons: function () {
-    HTTP.get('/pokemon-species').then(function (json) {
-      // console.log(json);
-      var pokes = json.results;
+  getPokemons: function (link) {
+    HTTP.get(link).then(function (json) {
+      console.log(json);
+      var pokes = json;
       this.pokemons = pokes;
       this.trigger('change', this.pokemons);
     }.bind(this));

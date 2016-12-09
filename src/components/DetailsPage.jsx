@@ -53,7 +53,7 @@ var DetailsPage = React.createClass({
       abilities: this.state.abilities,
       types: this.state.type
     };
-    var listAbilities = PokemonInfo.abilities.map(function(ability){
+    var listAbilities = PokemonInfo.abilities.map(function(ability, index){
       return <li>{ability}</li>;
     });
     var listTypes = PokemonInfo.types.map(function(type){
@@ -64,11 +64,13 @@ var DetailsPage = React.createClass({
         <ul>
           <li>{PokemonInfo.name}</li>
           <li><img src={PokemonInfo.image} /></li>
-          <li>{PokemonInfo.description}</li>
-          <li>{PokemonInfo.height}</li>
-          <li>{PokemonInfo.weight}</li>
-          <li>{PokemonInfo.category}</li>
+          <li>Description: {PokemonInfo.description}</li>
+          <li>Height: {PokemonInfo.height}</li>
+          <li>Weight: {PokemonInfo.weight}</li>
+          <li>Category: {PokemonInfo.category}</li>
+          <li>Abilities:</li>
           <li>{listAbilities}</li>
+          <li>Type:</li>
           <li>{listTypes}</li>
         </ul>
       </div>
