@@ -15,22 +15,27 @@ var MainPage = React.createClass({
   },
   onChange: function(event, pokemons) {
     this.setState({pokemons: pokemons.results});
-    var next = "/pokemon-species/?offset=" + 20;
+    var next = "/pokemon-species/?offset=";
     this.setState({next: next})
   },
-  handleLoad: function(){
-    
-  },
   render: function() {
-    var id = 0
+    var id = 0;
+    var img;
+    var name;
+    
+    function capitalize(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
+    };
+
     var listPokemons = this.state.pokemons.map(function(pokemon, index){
       id = index + 1;
-      var img = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png";
-      return <Pokemon key={pokemon.url} link={"/pokemon/" + id} pid={id} pokemon={pokemon.name} image={img} />;
+      img = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png";
+      name = capitalize(pokemon.name);
+      return <Pokemon key={pokemon.url} link={"/pokemon/" + id} pid={id} pokemon={name} image={img} />;
     });
 
     var styles = {
-      marginTop: 20,
+      paddingTop: 50,
       textAlign: "center"
     };
 
@@ -39,7 +44,6 @@ var MainPage = React.createClass({
         <div style={styles}>
           <ul>{listPokemons}</ul>
         </div>
-        <div><button onClick={this.handleLoad}>Load More</button></div>
       </div>
     );
   }

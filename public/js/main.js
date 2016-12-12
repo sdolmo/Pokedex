@@ -27612,6 +27612,7 @@ module.exports = Routes;
 
 },{"./components/BasePage.jsx":256,"./components/DetailsPage.jsx":257,"./components/MainPage.jsx":258,"react":231,"react-router":200}],256:[function(require,module,exports){
 var React = require('react');
+var Nav = require('./Nav.jsx');
 
 var BasePage = React.createClass({
   displayName: 'BasePage',
@@ -27620,6 +27621,7 @@ var BasePage = React.createClass({
     return React.createElement(
       'div',
       null,
+      React.createElement(Nav, null),
       this.props.children
     );
   }
@@ -27627,7 +27629,7 @@ var BasePage = React.createClass({
 
 module.exports = BasePage;
 
-},{"react":231}],257:[function(require,module,exports){
+},{"./Nav.jsx":259,"react":231}],257:[function(require,module,exports){
 var React = require('react');
 var Reflux = require('reflux');
 var Actions = require('../reflux/Actions.jsx');
@@ -27699,9 +27701,12 @@ var DetailsPage = React.createClass({
         type
       );
     });
+    var styles = {
+      textAlign: "center"
+    };
     return React.createElement(
       'div',
-      null,
+      { style: styles },
       React.createElement(
         'ul',
         null,
@@ -27766,7 +27771,7 @@ var DetailsPage = React.createClass({
 
 module.exports = DetailsPage;
 
-},{"../reflux/Actions.jsx":261,"../reflux/PokemonDataStore.jsx":262,"../reflux/PokemonStore.jsx":263,"react":231,"reflux":249}],258:[function(require,module,exports){
+},{"../reflux/Actions.jsx":262,"../reflux/PokemonDataStore.jsx":263,"../reflux/PokemonStore.jsx":264,"react":231,"reflux":249}],258:[function(require,module,exports){
 var React = require('react');
 var Pokemon = require('./Pokemon.jsx');
 var Reflux = require('reflux');
@@ -27786,20 +27791,27 @@ var MainPage = React.createClass({
   },
   onChange: function (event, pokemons) {
     this.setState({ pokemons: pokemons.results });
-    var next = "/pokemon-species/?offset=" + 20;
+    var next = "/pokemon-species/?offset=";
     this.setState({ next: next });
   },
-  handleLoad: function () {},
   render: function () {
     var id = 0;
+    var img;
+    var name;
+
+    function capitalize(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
+    };
+
     var listPokemons = this.state.pokemons.map(function (pokemon, index) {
       id = index + 1;
-      var img = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png";
-      return React.createElement(Pokemon, { key: pokemon.url, link: "/pokemon/" + id, pid: id, pokemon: pokemon.name, image: img });
+      img = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png";
+      name = capitalize(pokemon.name);
+      return React.createElement(Pokemon, { key: pokemon.url, link: "/pokemon/" + id, pid: id, pokemon: name, image: img });
     });
 
     var styles = {
-      marginTop: 20,
+      paddingTop: 50,
       textAlign: "center"
     };
 
@@ -27814,15 +27826,6 @@ var MainPage = React.createClass({
           null,
           listPokemons
         )
-      ),
-      React.createElement(
-        'div',
-        null,
-        React.createElement(
-          'button',
-          { onClick: this.handleLoad },
-          'Load More'
-        )
       )
     );
   }
@@ -27830,7 +27833,41 @@ var MainPage = React.createClass({
 
 module.exports = MainPage;
 
-},{"../reflux/Actions.jsx":261,"../reflux/PokemonStore.jsx":263,"./Pokemon.jsx":259,"react":231,"reflux":249}],259:[function(require,module,exports){
+},{"../reflux/Actions.jsx":262,"../reflux/PokemonStore.jsx":264,"./Pokemon.jsx":260,"react":231,"reflux":249}],259:[function(require,module,exports){
+var React = require('react');
+var ReactRouter = require('react-router');
+var Link = ReactRouter.Link;
+
+var Nav = React.createClass({
+  displayName: 'Nav',
+
+  render: function () {
+
+    var styles = {
+      backgroundColor: "#fff",
+      paddingBottom: 20,
+      position: "relative"
+    };
+
+    return React.createElement(
+      'div',
+      { style: styles },
+      React.createElement(
+        'div',
+        { className: 'logo' },
+        React.createElement(
+          Link,
+          { to: '/' },
+          React.createElement('img', { src: 'image/pokemon-logo.png' })
+        )
+      )
+    );
+  }
+});
+
+module.exports = Nav;
+
+},{"react":231,"react-router":200}],260:[function(require,module,exports){
 var React = require('react');
 var ReactRouter = require('react-router');
 var Link = ReactRouter.Link;
@@ -27841,31 +27878,44 @@ var Pokemon = React.createClass({
 
   render: function () {
     styles = {
-      listStyle: "none"
+      listStyle: "none",
+      fontSize: 20,
+      color: "#000"
     };
 
+    thumbnailStyle = {
+      height: 200,
+      backgroundColor: "#fff",
+      textAlign: "center"
+    };
+
+    name = {
+      marginTop: 20
+    };
     return React.createElement(
       'div',
-      { className: 'col-sm-4', style: styles },
+      { className: 'col-sm-3', style: styles },
       React.createElement(
-        Link,
-        { to: this.props.link },
+        'div',
+        { style: thumbnailStyle, className: 'thumbnail' },
         React.createElement(
-          'li',
-          null,
-          React.createElement('img', { src: this.props.image })
-        ),
-        React.createElement(
-          'li',
-          null,
-          this.props.pid
-        ),
-        React.createElement(
-          'li',
-          null,
-          this.props.pokemon
-        ),
-        React.createElement('br', null)
+          Link,
+          { to: this.props.link },
+          React.createElement(
+            'li',
+            null,
+            React.createElement('img', { src: this.props.image })
+          ),
+          React.createElement('br', null),
+          React.createElement(
+            'li',
+            null,
+            this.props.pid,
+            ' - ',
+            this.props.pokemon
+          ),
+          React.createElement('br', null)
+        )
       )
     );
   }
@@ -27873,21 +27923,21 @@ var Pokemon = React.createClass({
 
 module.exports = Pokemon;
 
-},{"react":231,"react-router":200}],260:[function(require,module,exports){
+},{"react":231,"react-router":200}],261:[function(require,module,exports){
 var React = require('react');
 var ReactDOM = require('react-dom');
 var Routes = require('./Routes.jsx');
 
 ReactDOM.render(Routes, document.getElementById('main'));
 
-},{"./Routes.jsx":255,"react":231,"react-dom":47}],261:[function(require,module,exports){
+},{"./Routes.jsx":255,"react":231,"react-dom":47}],262:[function(require,module,exports){
 var Reflux = require('reflux');
 
 var Actions = Reflux.createActions(['getPokemons', 'getPokemon1', 'getPokemon2']);
 
 module.exports = Actions;
 
-},{"reflux":249}],262:[function(require,module,exports){
+},{"reflux":249}],263:[function(require,module,exports){
 var HTTP = require('../services/HttpService.js');
 var Reflux = require('reflux');
 var Actions = require('./Actions.jsx');
@@ -27905,7 +27955,7 @@ var PokemonDataStore = Reflux.createStore({
 
 module.exports = PokemonDataStore;
 
-},{"../services/HttpService.js":264,"./Actions.jsx":261,"reflux":249}],263:[function(require,module,exports){
+},{"../services/HttpService.js":265,"./Actions.jsx":262,"reflux":249}],264:[function(require,module,exports){
 var HTTP = require('../services/HttpService.js');
 var Reflux = require('reflux');
 var Actions = require('./Actions.jsx');
@@ -27931,7 +27981,7 @@ var PokemonStore = Reflux.createStore({
 
 module.exports = PokemonStore;
 
-},{"../services/HttpService.js":264,"./Actions.jsx":261,"reflux":249}],264:[function(require,module,exports){
+},{"../services/HttpService.js":265,"./Actions.jsx":262,"reflux":249}],265:[function(require,module,exports){
 var Fetch = require('whatwg-fetch');
 var baseUrl = "http://pokeapi.co/api/v2";
 
@@ -27945,4 +27995,4 @@ var service = {
 
 module.exports = service;
 
-},{"whatwg-fetch":254}]},{},[260]);
+},{"whatwg-fetch":254}]},{},[261]);

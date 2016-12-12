@@ -59,8 +59,11 @@ var DetailsPage = React.createClass({
     var listTypes = PokemonInfo.types.map(function(type){
       return <li>{type}</li>;
     });
+    var styles = {
+      textAlign: "center"
+    };
     return (
-      <div>
+      <div style={styles}>
         <ul>
           <li>{PokemonInfo.name}</li>
           <li><img src={PokemonInfo.image} /></li>
